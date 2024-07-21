@@ -1,15 +1,14 @@
-import { Endpoints } from "@octokit/types";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { checkVisible } from "./utils/elements";
 import { debounce } from "./utils/functions";
 import { getUsers } from "./api/users";
+import { observer } from "mobx-react";
+import store from "./store";
 
 let inRequest = false;
 
-function App() {
-  const [users, setUsers] = useState<
-    Endpoints["GET /users"]["response"]["data"]
-  >([]);
+const App = observer(() => {
+  const users = store.users;
 
   useEffect(() => {
     const onScroll = debounce(() => {
@@ -22,7 +21,8 @@ function App() {
         lastUserId &&
           getUsers(lastUserId)
             .then((response) => {
-              setUsers([...users, ...response.data]);
+              store.addUsers(response.data);
+              // setUsers([...users, ...response.data]);
             })
             .finally(() => {
               inRequest = false;
@@ -35,9 +35,12 @@ function App() {
   }, [users]);
 
   useEffect(() => {
-    getUsers().then((response) => {
-      setUsers(response.data);
+    const abortController = new AbortController();
+    getUsers(1, abortController).then((response) => {
+      store.addUsers(response.data);
     });
+
+    return () => abortController.abort();
   }, []);
 
   if (!users.length) {
@@ -57,6 +60,6 @@ function App() {
       </ul>
     </>
   );
-}
+});
 
 export default App;
