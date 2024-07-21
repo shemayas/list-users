@@ -4,6 +4,8 @@ import { debounce } from "./utils/functions";
 import { getUsers } from "./api/users";
 import { observer } from "mobx-react";
 import store from "./store";
+import User from "./components/User";
+import "./App.css";
 
 let inRequest = false;
 
@@ -22,7 +24,6 @@ const App = observer(() => {
           getUsers(lastUserId)
             .then((response) => {
               store.addUsers(response.data);
-              // setUsers([...users, ...response.data]);
             })
             .finally(() => {
               inRequest = false;
@@ -40,7 +41,7 @@ const App = observer(() => {
       store.addUsers(response.data);
     });
 
-    return () => abortController.abort();
+    return () => abortController.abort("aborted because of react strict mode two time mount");
   }, []);
 
   if (!users.length) {
@@ -48,14 +49,13 @@ const App = observer(() => {
   }
   return (
     <>
-      <ul>
+      <ul id="user-list">
         {users.map((user, index) => (
-          <li
-            id={users.length - 1 === index ? "last" : undefined}
+          <User
             key={`${user.login}-${index}`}
-          >
-            {user.login}
-          </li>
+            user={user}
+            isLast={index === users.length - 1}
+          />
         ))}
       </ul>
     </>
