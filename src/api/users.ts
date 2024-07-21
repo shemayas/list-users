@@ -1,8 +1,6 @@
 import { Octokit } from "@octokit/core";
 
-const octokit = new Octokit({
-  auth: "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",
-});
+const octokit = new Octokit();
 
 export const getUsers = async (
   since: number,
